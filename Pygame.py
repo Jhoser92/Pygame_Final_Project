@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from pygame.sprite import spritecollide
 from pygame.transform import scale
 
 pygame.init()
@@ -34,6 +35,8 @@ class Player():
             img_left = pygame.transform.flip(img_right, True, False)
             self.images_right.append(img_right)
             self.images_left.append(img_left)
+        self.dead_image = pygame.image.load('img/ghost.png')
+        self.dead_image = pygame.transform.scale(self.dead_image, (40, 80))
         self.image = self.images_right[self.index]
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -117,6 +120,11 @@ class Player():
             # Update player coordinates
             self.rect.x += dx
             self.rect.y += dy
+
+        elif game_over == -1:
+            self.image = self.dead_image
+            if self.rect.y > 200:
+                self.rect.y -= 5
 
         # Draw player onto screen
         screen.blit(self.image, self.rect)
@@ -236,7 +244,7 @@ while run == True:
 
     if game_over == 0:
         blob_group.update()
-        
+
     blob_group.draw(screen)
     spikes_group.draw(screen)
     
