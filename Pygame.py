@@ -22,6 +22,7 @@ main_menu = True
 # Load Images
 sun_img = pygame.image.load('img/sun.png')
 bg_img = pygame.image.load('img/sky.png')
+menu_img = pygame.image.load('img/menuscreen.png')
 bdr1_img = pygame.image.load('img/bdr2.png')
 restart_img = pygame.image.load('img/restart_btn.png')
 start_img = pygame.image.load('img/start_btn.png')
@@ -282,15 +283,15 @@ exit_button = Button(screen_width // 2 +100, screen_height // 3, exit_img)
 run = True
 while run == True:
 
-    screen.blit(bg_img, (0, 0))
-    screen.blit(sun_img, (100, 100))
-
     if main_menu == True:
+        screen.blit(menu_img, (0, 0))
         if exit_button.draw():
             run = False
         if start_button.draw():
             main_menu = False
     else:
+        screen.blit(bg_img, (0, 0))
+        screen.blit(sun_img, (100, 100))
         world.draw()
 
         if game_over == 0:
