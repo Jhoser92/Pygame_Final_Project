@@ -17,12 +17,15 @@ pygame.display.set_caption('Platformer')
 # Define Game Variables
 tile_size = 50
 game_over = 0
+main_menu = True
 
 # Load Images
 sun_img = pygame.image.load('img/sun.png')
 bg_img = pygame.image.load('img/sky.png')
 bdr1_img = pygame.image.load('img/bdr2.png')
 restart_img = pygame.image.load('img/restart_btn.png')
+start_img = pygame.image.load('img/start_btn.png')
+exit_img = pygame.image.load('img/exit_btn.png')
 
 class Button():
     def __init__(self, x, y, image):
@@ -273,6 +276,8 @@ world = World(world_data)
 
 # Create buttons.
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
+start_button = Button(screen_width // 2 -350, screen_height // 3, start_img)
+exit_button = Button(screen_width // 2 +100, screen_height // 3, exit_img)
 
 run = True
 while run == True:
@@ -280,21 +285,27 @@ while run == True:
     screen.blit(bg_img, (0, 0))
     screen.blit(sun_img, (100, 100))
 
-    world.draw()
+    if main_menu == True:
+        if exit_button.draw():
+            run = False
+        if start_button.draw():
+            main_menu = False
+    else:
+        world.draw()
 
-    if game_over == 0:
-        blob_group.update()
+        if game_over == 0:
+            blob_group.update()
 
-    blob_group.draw(screen)
-    spikes_group.draw(screen)
-    
-    game_over = player.update(game_over)
+        blob_group.draw(screen)
+        spikes_group.draw(screen)
+        
+        game_over = player.update(game_over)
 
-    # If player has died
-    if game_over == -1:
-        if restart_button.draw():
-            player.reset(100, screen_height - 130)
-            game_over = 0
+        # If player has died
+        if game_over == -1:
+            if restart_button.draw():
+                player.reset(100, screen_height - 130)
+                game_over = 0
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
