@@ -276,7 +276,7 @@ blob_group = pygame.sprite.Group()
 world = World(world_data)
 
 # Create buttons.
-restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
+restart_button = Button(screen_width // 2 - 50, screen_height // 3 + 100, restart_img)
 start_button = Button(screen_width // 2 -350, screen_height // 3, start_img)
 exit_button = Button(screen_width // 2 +100, screen_height // 3, exit_img)
 
