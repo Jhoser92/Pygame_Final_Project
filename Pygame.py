@@ -23,6 +23,13 @@ sun_img = pygame.image.load('img/sun.png')
 bg_img = pygame.image.load('img/sky.png')
 bdr1_img = pygame.image.load('img/bdr2.png')
 
+class Button():
+    def __init__(self, x, y, image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
 class Player():
     def __init__(self, x, y):
         self.images_right = []
