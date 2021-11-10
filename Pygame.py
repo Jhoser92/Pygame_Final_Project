@@ -2,6 +2,8 @@ import pygame
 from pygame.locals import *
 from pygame.sprite import spritecollide
 from pygame.transform import scale
+import pickle
+from os import path
 
 pygame.init()
 
@@ -18,6 +20,8 @@ pygame.display.set_caption('Platformer')
 tile_size = 50
 game_over = 0
 main_menu = True
+level = 1
+max_levels = 2
 
 # Load Images
 sun_img = pygame.image.load('img/sun.png')
@@ -27,6 +31,22 @@ bdr1_img = pygame.image.load('img/bdr1.png')
 restart_img = pygame.image.load('img/restart_btn.png')
 start_img = pygame.image.load('img/start_btn.png')
 exit_img = pygame.image.load('img/exit_btn.png')
+
+# Function to reset level.
+def reset_level(level):
+    player.reset(100, screen_height - 130)
+    blob_group.empty()
+    spikes_group.empty()
+    exit_group.empty()
+
+    # Load in level data and create world.
+    if path.exists(f'level{level}_data'):
+        pickle_in = open(f'level{level}_data', 'rb')
+        world_data = pickle.load(pickle_in)
+    world = World(world_data)
+
+    return world
+
 
 class Button():
     def __init__(self, x, y, image):
@@ -132,6 +152,10 @@ class Player():
             if pygame.sprite.spritecollide(self, spikes_group, False):
                 game_over = -1
 
+            # Check for collision with exit.
+            if pygame.sprite.spritecollide(self, exit_group, False):
+                game_over = 1
+
             # Update player coordinates
             self.rect.x += dx
             self.rect.y += dy
@@ -198,6 +222,15 @@ class World():
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
+                if tile == 3:
+                    blob = Enemy(col_count * tile_size, row_count * tile_size + 15)
+                    blob_group.add(blob)
+                if tile == 6:
+                    spikes = Spikes(col_count * tile_size, row_count * tile_size + (tile_size // 2))
+                    spikes_group.add(spikes)
+                if tile == 8:
+                    exit = Exit(col_count * tile_size, row_count * tile_size - (tile_size // 2))
+                    exit_group.add(exit)
                 if tile == 9:
                     img = pygame.transform.scale(bdr1_img, (tile_size, tile_size))
                     img_rect = img.get_rect()
@@ -205,12 +238,6 @@ class World():
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
-                if tile == 3:
-                    blob = Enemy(col_count * tile_size, row_count * tile_size + 15)
-                    blob_group.add(blob)
-                if tile == 6:
-                    spikes = Spikes(col_count * tile_size, row_count * tile_size + (tile_size // 2))
-                    spikes_group.add(spikes)
                 col_count += 1
             row_count += 1
     
@@ -245,34 +272,26 @@ class Spikes(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-world_data = [
-[9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9], 
-[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9], 
-[9, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9], 
-[9, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 2, 2, 9], 
-[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 7, 0, 5, 0, 0, 0, 9], 
-[9, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 9], 
-[9, 7, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9], 
-[9, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9], 
-[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 9], 
-[9, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9], 
-[9, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 9], 
-[9, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 9], 
-[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9], 
-[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 2, 9], 
-[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9], 
-[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 2], 
-[9, 0, 0, 0, 0, 0, 2, 2, 2, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1], 
-[9, 0, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
-[9, 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
-[2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-]
+class Exit(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        img = pygame.image.load('img/exit_door.png')
+        self.image = pygame.transform.scale(img, (tile_size, int(tile_size * 1.5)))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
 
 player = Player(100, screen_height - 130)
 
-spikes_group = pygame.sprite.Group()
 blob_group = pygame.sprite.Group()
+spikes_group = pygame.sprite.Group()
+exit_group = pygame.sprite.Group()
 
+# Load in level data and create world.
+if path.exists(f'level{level}_data'):
+    pickle_in = open(f'level{level}_data', 'rb')
+    world_data = pickle.load(pickle_in)
 world = World(world_data)
 
 # Create buttons.
@@ -299,14 +318,34 @@ while run == True:
 
         blob_group.draw(screen)
         spikes_group.draw(screen)
+        exit_group.draw(screen)
         
         game_over = player.update(game_over)
 
         # If player has died
         if game_over == -1:
             if restart_button.draw():
-                player.reset(100, screen_height - 130)
+                world_data = []
+                world = reset_level(level)
                 game_over = 0
+        
+        # If player has completed the level.
+        if game_over == 1:
+            # Reset game and go to next level.
+            level += 1
+            if level <= max_levels:
+                # Reset level.
+                world_data = []
+                world = reset_level(level)
+                game_over = 0
+            else:
+                # Restart game.
+                if restart_button.draw():
+                    level = 1
+                    # Reset level.
+                    world_data = []
+                    world = reset_level(level)
+                    game_over = 0
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
