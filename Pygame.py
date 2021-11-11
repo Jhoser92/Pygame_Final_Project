@@ -16,12 +16,21 @@ screen_height = 1000
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Platformer')
 
+# Define font.
+font = pygame.font.SysFont('Berlin Sans FB Demi', 70)
+font_score = pygame.font.SysFont('Berlin Sans FB Demi', 30)
+
 # Define Game Variables
 tile_size = 50
 game_over = 0
 main_menu = True
 level = 1
 max_levels = 2
+score = 0
+
+# Define colors.
+white = (255, 255, 255)
+blue = (0, 0, 255)
 
 # Load Images
 sun_img = pygame.image.load('img/sun.png')
@@ -31,6 +40,10 @@ bdr1_img = pygame.image.load('img/bdr1.png')
 restart_img = pygame.image.load('img/restart_btn.png')
 start_img = pygame.image.load('img/start_btn.png')
 exit_img = pygame.image.load('img/exit_btn.png')
+
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x,y))
 
 # Function to reset level.
 def reset_level(level):
@@ -162,6 +175,7 @@ class Player():
 
         elif game_over == -1:
             self.image = self.dead_image
+            draw_text('Game Over!', font, blue, (screen_width // 1.9) - 200, screen_height // 2)
             if self.rect.y > 200:
                 self.rect.y -= 5
 
@@ -228,6 +242,9 @@ class World():
                 if tile == 6:
                     spikes = Spikes(col_count * tile_size, row_count * tile_size + (tile_size // 2))
                     spikes_group.add(spikes)
+                if tile == 7:
+                    rupee = Rupee(col_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
+                    rupee_group.add(rupee)
                 if tile == 8:
                     exit = Exit(col_count * tile_size, row_count * tile_size - (tile_size // 2))
                     exit_group.add(exit)
@@ -272,6 +289,14 @@ class Spikes(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+class Rupee(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        img = pygame.image.load('img/rupee.png')
+        self.image = pygame.transform.scale(img, (tile_size // 2, tile_size // 2))
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -286,7 +311,12 @@ player = Player(100, screen_height - 130)
 
 blob_group = pygame.sprite.Group()
 spikes_group = pygame.sprite.Group()
+rupee_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
+
+# Create dummy rupee for score.
+score_rupee = Rupee(tile_size // 2, tile_size // 2)
+rupee_group.add(score_rupee)
 
 # Load in level data and create world.
 if path.exists(f'level{level}_data'):
@@ -295,10 +325,11 @@ if path.exists(f'level{level}_data'):
 world = World(world_data)
 
 # Create buttons.
-restart_button = Button(screen_width // 2 - 50, screen_height // 3 + 100, restart_img)
-start_button = Button(screen_width // 2 -350, screen_height // 3, start_img)
-exit_button = Button(screen_width // 2 +100, screen_height // 3, exit_img)
+restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
+start_button = Button(screen_width // 2 -350, screen_height // 2.5, start_img)
+exit_button = Button(screen_width // 2 +100, screen_height // 2.5, exit_img)
 
+# Main game loop.
 run = True
 while run == True:
 
@@ -315,9 +346,15 @@ while run == True:
 
         if game_over == 0:
             blob_group.update()
+            # Update score.
+            # Check is rupee has been collected.
+            if pygame.sprite.spritecollide(player, rupee_group, True):
+                score += 1
+            draw_text(' x ' + str(score), font_score, white, tile_size - 10, 10)
 
         blob_group.draw(screen)
         spikes_group.draw(screen)
+        rupee_group.draw(screen)
         exit_group.draw(screen)
         
         game_over = player.update(game_over)
@@ -328,6 +365,7 @@ while run == True:
                 world_data = []
                 world = reset_level(level)
                 game_over = 0
+                score = 0
         
         # If player has completed the level.
         if game_over == 1:
@@ -339,6 +377,7 @@ while run == True:
                 world = reset_level(level)
                 game_over = 0
             else:
+                draw_text('You Win!', font, blue, (screen_width // 2) - 140, screen_height // 2)
                 # Restart game.
                 if restart_button.draw():
                     level = 1
@@ -346,6 +385,7 @@ while run == True:
                     world_data = []
                     world = reset_level(level)
                     game_over = 0
+                    score = 0
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
