@@ -2,9 +2,12 @@ import pygame
 from pygame.locals import *
 from pygame.sprite import spritecollide
 from pygame.transform import scale
+from pygame import mixer
 import pickle
 from os import path
 
+pygame.mixer.pre_init(44100, -16, 2, 512)
+mixer.init()
 pygame.init()
 
 FPS = 60
@@ -40,6 +43,19 @@ bdr1_img = pygame.image.load('img/bdr1.png')
 restart_img = pygame.image.load('img/restart_btn.png')
 start_img = pygame.image.load('img/start_btn.png')
 exit_img = pygame.image.load('img/exit_btn.png')
+
+# Load Sounds (Credits in comment.)
+pygame.mixer.music.load('sound/music.wav')             # Credit to Clinthammer(https://freesound.org/people/Clinthammer/sounds/179511/)
+pygame.mixer.music.play(-1, 0.0, 5000)
+rupee_fx = pygame.mixer.Sound('sound/rupee.wav')       # Credit to cabled_mess(https://freesound.org/people/cabled_mess/sounds/350874/)
+rupee_fx.set_volume(0.5)
+jump_fx = pygame.mixer.Sound('sound/jump.wav')         # Credit to se2001(https://freesound.org/people/se2001/sounds/518130/)
+jump_fx.set_volume(0.5)
+door_fx = pygame.mixer.Sound('sound/door.wav')         # Credit to Deela(https://freesound.org/people/Deela/sounds/487614/)
+door_fx.set_volume(0.5)
+gameover_fx = pygame.mixer.Sound('sound/gameover.wav') # Credit to ProjectsU012(https://freesound.org/people/ProjectsU012/sounds/333785/)
+gameover_fx.set_volume(0.5)
+
 
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
@@ -102,6 +118,7 @@ class Player():
             # Get key presses
             key = pygame.key.get_pressed()
             if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False:
+                jump_fx.play()
                 self.vel_y = -15
                 self.jumped = True
             if key[pygame.K_SPACE] == False:
@@ -160,14 +177,17 @@ class Player():
             # Check for collision with enemies.
             if pygame.sprite.spritecollide(self, blob_group, False):
                 game_over = -1
+                gameover_fx.play()
             
             # Check for collision with spikes.
             if pygame.sprite.spritecollide(self, spikes_group, False):
                 game_over = -1
+                gameover_fx.play()
 
             # Check for collision with exit.
             if pygame.sprite.spritecollide(self, exit_group, False):
                 game_over = 1
+                door_fx.play()
 
             # Update player coordinates
             self.rect.x += dx
@@ -350,6 +370,7 @@ while run == True:
             # Check is rupee has been collected.
             if pygame.sprite.spritecollide(player, rupee_group, True):
                 score += 1
+                rupee_fx.play()
             draw_text(' x ' + str(score), font_score, white, tile_size - 10, 10)
 
         blob_group.draw(screen)
