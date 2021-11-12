@@ -30,7 +30,7 @@ font_score = pygame.font.SysFont('Berlin Sans FB Demi', 30)
 tile_size = 50
 game_over = 0
 main_menu = True
-level = 3
+level = 1
 max_levels = 2
 score = 0
 
@@ -93,6 +93,7 @@ def draw_text(text, font, text_col, x, y):
 def reset_level(level):
     player.reset(50, screen_height - 130)
     blob_group.empty()
+    platform_group.empty()
     spikes_group.empty()
     exit_group.empty()
     rupee_group.empty()
@@ -142,6 +143,7 @@ class Player():
         dx = 0
         dy = 0
         walk_cooldown = 5
+        col_thresh = 20
 
         if game_over == 0:
             # Get key presses
@@ -178,25 +180,18 @@ class Player():
                     self.image = self.images_right[self.index]
                 if self.direction == -1:
                     self.image = self.images_left[self.index]
-            if self.jumped == True:
-                self.in_air = True
-                while self.in_air == True:
-                    if self.direction == 1:
-                        self.image = self.jump_image
-                    if self.direction == -1:
-                        self.image = self.jump_left_image
-                    else:
-                        self.in_air = False
-# if self.in_air == True and self.jumped == True:
-#                 if self.direction == 1:
-#                     self.image = self.jump_image
-#                 if self.direction == -1:
-#                     self.image = self.jump_left_image
-#             elif self.in_air == False and self.jumped == False:
-#                 if self.direction == 1:
-#                     self.image = self.images_right[self.index]
-#                 if self.direction == -1:
-#                     self.image = self.images_left[self.index]
+            if self.in_air == True and self.jumped == True:
+                self.image = self.jump_image
+                if self.direction == 1:
+                    self.image = self.jump_image
+                if self.direction == -1:
+                    self.image = self.jump_left_image
+            elif self.in_air == False and self.jumped == False:
+                self.image = self.images_right[self.index]
+                if self.direction == 1:
+                    self.image = self.images_right[self.index]
+                if self.direction == -1:
+                    self.image = self.images_left[self.index]
             
 
             # Add gravity
@@ -238,6 +233,26 @@ class Player():
                 game_over = 1
                 door_fx.play()
 
+            # Check for collision with platforms.
+            for platform in platform_group:
+                # Collision in the x direction
+                if platform.rect.colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
+                    dx = 0
+                # Collision in the x direction
+                if platform.rect.colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
+                    # Check if below platform.
+                    if abs((self.rect.top + dy) - platform.rect.bottom) < col_thresh:
+                        self.vel_y = 0
+                        dy = platform.rect.bottom - self.rect.top
+                    # Check if above platform
+                    elif abs ((self.rect.bottom + dy) - platform.rect.top) < col_thresh:
+                        self.rect.bottom = platform.rect.top - 1
+                        self.in_air = False
+                        dy = 0
+                    # Move sideways with platform.
+                    if platform.move_x != 0:
+                        self.rect.x += platform.move_direction
+
             # Update player coordinates
             self.rect.x += dx
             self.rect.y += dy
@@ -250,7 +265,7 @@ class Player():
 
         # Draw player onto screen
         screen.blit(self.image, self.rect)
-        pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+       
 
         return game_over
 
@@ -339,7 +354,7 @@ class World():
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
-            pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
+            
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -414,11 +429,12 @@ blob_group = pygame.sprite.Group()
 platform_group = pygame.sprite.Group()
 spikes_group = pygame.sprite.Group()
 rupee_group = pygame.sprite.Group()
+rupeescore_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 
 # Create dummy rupee for score.
 score_rupee = Rupee(tile_size // 2, tile_size // 2)
-rupee_group.add(score_rupee)
+rupeescore_group.add(score_rupee)
 
 # Load in level data and create world.
 if path.exists(f'level{level}_data'):
@@ -460,6 +476,7 @@ while run == True:
         platform_group.draw(screen)
         spikes_group.draw(screen)
         rupee_group.draw(screen)
+        rupeescore_group.draw(screen)
         exit_group.draw(screen)
         
         game_over = player.update(game_over)
