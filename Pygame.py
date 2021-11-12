@@ -1,4 +1,5 @@
 import pygame
+from pygame import image
 from pygame.locals import *
 from pygame.sprite import spritecollide
 from pygame.transform import scale
@@ -21,13 +22,15 @@ pygame.display.set_caption('Platformer')
 
 # Define font.
 font = pygame.font.SysFont('Berlin Sans FB Demi', 70)
+pause_fnt = pygame.font.SysFont('Berlin Sans FB Demi', 90)
+go_fnt = pygame.font.SysFont('Berlin Sans FB Demi', 90)
 font_score = pygame.font.SysFont('Berlin Sans FB Demi', 30)
 
 # Define Game Variables
 tile_size = 50
 game_over = 0
 main_menu = True
-level = 1
+level = 3
 max_levels = 2
 score = 0
 
@@ -56,6 +59,31 @@ door_fx.set_volume(0.5)
 gameover_fx = pygame.mixer.Sound('sound/gameover.wav') # Credit to ProjectsU012(https://freesound.org/people/ProjectsU012/sounds/333785/)
 gameover_fx.set_volume(0.5)
 
+# Function for pause
+def pause():
+    paused = True
+
+    # Notify the user what to do when paused.
+    draw_text('-Paused-', pause_fnt, blue, (screen_width // 2.2) - 140, screen_height // 4)
+    draw_text('P to continue', font, blue, (screen_width // 2.3) - 140, screen_height // 2.5)
+    draw_text('Q to quit', font, blue, (screen_width // 2.3) - 140, screen_height // 2)
+    pygame.display.update()  # Update surface.
+
+    while paused:
+        # Quit event.
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            # Event to handle key presses when paused.
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    paused = False
+                elif event.key == pygame.K_q:
+                    pygame.quit()
+                    quit()
+        
+        fpsClock.tick(FPS)
 
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
@@ -63,10 +91,11 @@ def draw_text(text, font, text_col, x, y):
 
 # Function to reset level.
 def reset_level(level):
-    player.reset(100, screen_height - 130)
+    player.reset(50, screen_height - 130)
     blob_group.empty()
     spikes_group.empty()
     exit_group.empty()
+    rupee_group.empty()
 
     # Load in level data and create world.
     if path.exists(f'level{level}_data'):
@@ -149,6 +178,26 @@ class Player():
                     self.image = self.images_right[self.index]
                 if self.direction == -1:
                     self.image = self.images_left[self.index]
+            if self.jumped == True:
+                self.in_air = True
+                while self.in_air == True:
+                    if self.direction == 1:
+                        self.image = self.jump_image
+                    if self.direction == -1:
+                        self.image = self.jump_left_image
+                    else:
+                        self.in_air = False
+# if self.in_air == True and self.jumped == True:
+#                 if self.direction == 1:
+#                     self.image = self.jump_image
+#                 if self.direction == -1:
+#                     self.image = self.jump_left_image
+#             elif self.in_air == False and self.jumped == False:
+#                 if self.direction == 1:
+#                     self.image = self.images_right[self.index]
+#                 if self.direction == -1:
+#                     self.image = self.images_left[self.index]
+            
 
             # Add gravity
             self.vel_y += 1
@@ -195,7 +244,7 @@ class Player():
 
         elif game_over == -1:
             self.image = self.dead_image
-            draw_text('Game Over!', font, blue, (screen_width // 1.9) - 200, screen_height // 2)
+            draw_text('Game Over!', go_fnt, blue, (screen_width // 2.4) - 140, screen_height // 3)
             if self.rect.y > 200:
                 self.rect.y -= 5
 
@@ -216,6 +265,9 @@ class Player():
             img_left = pygame.transform.flip(img_right, True, False)
             self.images_right.append(img_right)
             self.images_left.append(img_left)
+        self.jump_image = pygame.image.load('img/guyjump.png')
+        self.jump_image = pygame.transform.scale(self.jump_image, (40, 80))
+        self.jump_left_image = pygame.transform.flip(self.jump_image, True, False)
         self.dead_image = pygame.image.load('img/ghost.png')
         self.dead_image = pygame.transform.scale(self.dead_image, (40, 80))
         self.image = self.images_right[self.index]
@@ -259,6 +311,12 @@ class World():
                 if tile == 3:
                     blob = Enemy(col_count * tile_size, row_count * tile_size + 15)
                     blob_group.add(blob)
+                if tile == 4:
+                    platform = Platform(col_count * tile_size, row_count * tile_size, 1, 0)
+                    platform_group.add(platform)
+                if tile == 5:
+                    platform = Platform(col_count * tile_size, row_count * tile_size, 0, 1)
+                    platform_group.add(platform)
                 if tile == 6:
                     spikes = Spikes(col_count * tile_size, row_count * tile_size + (tile_size // 2))
                     spikes_group.add(spikes)
@@ -300,6 +358,29 @@ class Enemy(pygame.sprite.Sprite):
             self.move_direction *= -1
             self.move_counter *= -1
 
+class Platform(pygame.sprite.Sprite):
+    def __init__(self, x, y, move_x, move_y):
+        pygame.sprite.Sprite.__init__(self)
+        img = pygame.image.load('img/platform.png')
+        self.image = pygame.transform.scale(img, (tile_size, tile_size // 2))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.move_counter = 0
+        self.move_direction = 1
+        self.move_x = move_x
+        self.move_y = move_y
+
+
+    def update(self):
+        self.rect.x += self.move_direction * self.move_x
+        self.rect.y += self.move_direction * self.move_y
+        self.move_counter += 1
+        if abs(self.move_counter) > 50:
+            self.move_direction *= -1
+            self.move_counter *= -1
+
+
 class Spikes(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -327,9 +408,10 @@ class Exit(pygame.sprite.Sprite):
         self.rect.y = y
 
 
-player = Player(100, screen_height - 130)
+player = Player(50, screen_height - 130)
 
 blob_group = pygame.sprite.Group()
+platform_group = pygame.sprite.Group()
 spikes_group = pygame.sprite.Group()
 rupee_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
@@ -345,7 +427,7 @@ if path.exists(f'level{level}_data'):
 world = World(world_data)
 
 # Create buttons.
-restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
+restart_button = Button(screen_width // 2 - 50, screen_height // 2, restart_img)
 start_button = Button(screen_width // 2 -350, screen_height // 2.5, start_img)
 exit_button = Button(screen_width // 2 +100, screen_height // 2.5, exit_img)
 
@@ -366,6 +448,7 @@ while run == True:
 
         if game_over == 0:
             blob_group.update()
+            platform_group.update()
             # Update score.
             # Check is rupee has been collected.
             if pygame.sprite.spritecollide(player, rupee_group, True):
@@ -374,6 +457,7 @@ while run == True:
             draw_text(' x ' + str(score), font_score, white, tile_size - 10, 10)
 
         blob_group.draw(screen)
+        platform_group.draw(screen)
         spikes_group.draw(screen)
         rupee_group.draw(screen)
         exit_group.draw(screen)
@@ -398,7 +482,7 @@ while run == True:
                 world = reset_level(level)
                 game_over = 0
             else:
-                draw_text('You Win!', font, blue, (screen_width // 2) - 140, screen_height // 2)
+                draw_text('You Win!', go_fnt, blue, (screen_width // 2.2) - 140, screen_height // 3)
                 # Restart game.
                 if restart_button.draw():
                     level = 1
@@ -408,9 +492,15 @@ while run == True:
                     game_over = 0
                     score = 0
 
+    # Event Handler
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
+        if main_menu == False:
+            key = pygame.key.get_pressed()
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if key[pygame.K_p]:
+                    pause()
 
     pygame.display.update()
     fpsClock.tick(FPS)
