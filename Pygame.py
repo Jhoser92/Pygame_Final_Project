@@ -31,7 +31,7 @@ font_score = pygame.font.SysFont('Berlin Sans FB Demi', 30)
 tile_size = 50
 game_over = 0
 main_menu = True
-level = 5
+level = 1
 max_levels = 4
 score = 0
 
