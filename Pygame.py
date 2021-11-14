@@ -31,7 +31,7 @@ font_score = pygame.font.SysFont('Berlin Sans FB Demi', 30)
 tile_size = 50
 game_over = 0
 main_menu = True
-level = 1
+level = 5
 max_levels = 4
 score = 0
 
@@ -231,9 +231,10 @@ class Player():
                 gameover_fx.play()
 
             # Check for collision with exit.
-            if pygame.sprite.spritecollide(self, exit_group, False):
-                game_over = 1
-                door_fx.play()
+            if score >= 5:
+                if pygame.sprite.spritecollide(self, exit_group, False):
+                    game_over = 1
+                    door_fx.play()
             
             # Check for collision with edges.
             if self.rect.x >= screen_width or self.rect.x < 0 or self.rect.y >= screen_height or self.rect.y < 0:
@@ -411,6 +412,8 @@ class Spikes(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         img = pygame.image.load('img/spikes.png')
+        if level >= 2:
+            img = pygame.image.load('img/world2/lava.png')
         self.image = pygame.transform.scale(img, (tile_size, tile_size //2))
         self.rect = self.image.get_rect()
         self.rect.x = x
