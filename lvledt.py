@@ -34,7 +34,7 @@ coin_img = pygame.image.load('img/rupee.png')
 exit_img = pygame.image.load('img/exit_door.png')
 save_img = pygame.image.load('img/save_btn.png')
 load_img = pygame.image.load('img/load_btn.png')
-bdr_img = pygame.image.load('img/bdr1.png')
+bdr_img = pygame.image.load('img/bdr3.png')
 
 
 #define game variables

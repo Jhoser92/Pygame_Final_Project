@@ -1,5 +1,6 @@
 import pygame
 from pygame import image
+from pygame import rect
 from pygame.locals import *
 from pygame.sprite import spritecollide
 from pygame.transform import scale
@@ -31,8 +32,9 @@ tile_size = 50
 game_over = 0
 main_menu = True
 level = 1
-max_levels = 2
+max_levels = 4
 score = 0
+
 
 # Define colors.
 white = (255, 255, 255)
@@ -40,7 +42,7 @@ blue = (0, 0, 255)
 
 # Load Images
 sun_img = pygame.image.load('img/sun.png')
-bg_img = pygame.image.load('img/sky.png')
+bg_img = pygame.image.load('img/world1/sky.png')
 menu_img = pygame.image.load('img/menuscreen.png')
 bdr1_img = pygame.image.load('img/bdr1.png')
 restart_img = pygame.image.load('img/restart_btn.png')
@@ -232,6 +234,11 @@ class Player():
             if pygame.sprite.spritecollide(self, exit_group, False):
                 game_over = 1
                 door_fx.play()
+            
+            # Check for collision with edges.
+            if self.rect.x >= screen_width or self.rect.x < 0 or self.rect.y >= screen_height or self.rect.y < 0:
+                game_over = -1
+                gameover_fx.play()
 
             # Check for collision with platforms.
             for platform in platform_group:
@@ -304,7 +311,9 @@ class World():
         # Load images
         dirt_img = pygame.image.load('img/dirt.png')
         grass_img = pygame.image.load('img/grass.png')
-        
+        if level >= 2:
+            grass_img = pygame.image.load('img/world2/brick.png')
+            dirt_img = pygame.image.load('img/world2/brickfloor.png')
         row_count = 0
         for row in data:
             col_count = 0
@@ -360,6 +369,8 @@ class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('img/enemy.png')
+        if level == 2:
+            self.image = pygame.image.load('img/world2/enemy2.png')
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -459,7 +470,8 @@ while run == True:
             main_menu = False
     else:
         screen.blit(bg_img, (0, 0))
-        screen.blit(sun_img, (100, 100))
+        if level == 1:
+            screen.blit(sun_img, (100, 100))
         world.draw()
 
         if game_over == 0:
@@ -493,6 +505,8 @@ while run == True:
         if game_over == 1:
             # Reset game and go to next level.
             level += 1
+            if level == 2:
+                bg_img = pygame.image.load('img/world2/castle.png')
             if level <= max_levels:
                 # Reset level.
                 world_data = []
@@ -508,6 +522,8 @@ while run == True:
                     world = reset_level(level)
                     game_over = 0
                     score = 0
+                    if level == 1:
+                        bg_img = pygame.image.load('img/world1/sky.png')
 
     # Event Handler
     for event in pygame.event.get():
