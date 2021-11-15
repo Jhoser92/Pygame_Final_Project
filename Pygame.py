@@ -32,8 +32,9 @@ tile_size = 50
 game_over = 0
 main_menu = True
 level = 1
-max_levels = 4
+max_levels = 10
 score = 0
+exit_score = 5
 
 
 # Define colors.
@@ -41,13 +42,15 @@ white = (255, 255, 255)
 blue = (0, 0, 255)
 
 # Load Images
-sun_img = pygame.image.load('img/sun.png')
+sun_img = pygame.image.load('img/world1/sun.png')
+moon_img = pygame.image.load('img/world2/moon.png')
 bg_img = pygame.image.load('img/world1/sky.png')
 menu_img = pygame.image.load('img/menuscreen.png')
 bdr1_img = pygame.image.load('img/bdr1.png')
 restart_img = pygame.image.load('img/restart_btn.png')
 start_img = pygame.image.load('img/start_btn.png')
 exit_img = pygame.image.load('img/exit_btn.png')
+exit2_img = pygame.image.load('img/exit_btn2.png')
 
 # Load Sounds (Credits in comment.)
 pygame.mixer.music.load('sound/music.wav')             # Credit to Clinthammer(https://freesound.org/people/Clinthammer/sounds/179511/)
@@ -231,7 +234,7 @@ class Player():
                 gameover_fx.play()
 
             # Check for collision with exit.
-            if score >= 5:
+            if score >= exit_score:
                 if pygame.sprite.spritecollide(self, exit_group, False):
                     game_over = 1
                     door_fx.play()
@@ -310,11 +313,11 @@ class World():
         self.tile_list = []
 
         # Load images
-        dirt_img = pygame.image.load('img/dirt.png')
-        grass_img = pygame.image.load('img/grass.png')
-        if level >= 2:
-            grass_img = pygame.image.load('img/world2/brick.png')
-            dirt_img = pygame.image.load('img/world2/brickfloor.png')
+        dirt_img = pygame.image.load('img/world1/dirt.png')
+        grass_img = pygame.image.load('img/world1/grass.png')
+        if level > 5 and level < 11:
+            grass_img = pygame.image.load('img/world2/grass2.png')
+            dirt_img = pygame.image.load('img/world2/dirt2.png')
         row_count = 0
         for row in data:
             col_count = 0
@@ -369,8 +372,8 @@ class World():
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('img/enemy.png')
-        if level == 2:
+        self.image = pygame.image.load('img/world1/enemy.png')
+        if level > 5 and level < 11:
             self.image = pygame.image.load('img/world2/enemy2.png')
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -388,7 +391,9 @@ class Enemy(pygame.sprite.Sprite):
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y, move_x, move_y):
         pygame.sprite.Sprite.__init__(self)
-        img = pygame.image.load('img/platform.png')
+        img = pygame.image.load('img/world1/platform.png')
+        if level > 5 and level < 11:
+            img = pygame.image.load('img/world2/platform2.png')
         self.image = pygame.transform.scale(img, (tile_size, tile_size // 2))
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -411,9 +416,9 @@ class Platform(pygame.sprite.Sprite):
 class Spikes(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        img = pygame.image.load('img/spikes.png')
-        if level >= 2:
-            img = pygame.image.load('img/world2/lava.png')
+        img = pygame.image.load('img/world1/spikes.png')
+        if level > 5 and level < 11:
+            img = pygame.image.load('img/world2/thorns.png')
         self.image = pygame.transform.scale(img, (tile_size, tile_size //2))
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -457,9 +462,10 @@ if path.exists(f'level{level}_data'):
 world = World(world_data)
 
 # Create buttons.
-restart_button = Button(screen_width // 2 - 50, screen_height // 2, restart_img)
-start_button = Button(screen_width // 2 -350, screen_height // 2.5, start_img)
-exit_button = Button(screen_width // 2 +100, screen_height // 2.5, exit_img)
+restart_button = Button(screen_width // 2 - 60, screen_height // 2, restart_img)
+start_button = Button(screen_width // 2 - 350, screen_height // 2.5, start_img)
+exit_button = Button(screen_width // 2 + 100, screen_height // 2.5, exit_img)
+exit2_button = Button(screen_width // 2 - 40, screen_height // 1.8, exit2_img)
 
 # Main game loop.
 run = True
@@ -473,8 +479,13 @@ while run == True:
             main_menu = False
     else:
         screen.blit(bg_img, (0, 0))
-        if level == 1:
+        if level <= 5:
             screen.blit(sun_img, (100, 100))
+        elif level > 5 and level < 11:
+            screen.blit(moon_img, (100, 100))
+        if level == 1:
+            draw_text('Collect all 5 rupees', font, blue, (screen_width // 3) - 140, screen_height // 3)
+            draw_text('to exit!', font, blue, (screen_width // 2) - 140, screen_height // 2.5)
         world.draw()
 
         if game_over == 0:
@@ -503,13 +514,15 @@ while run == True:
                 world = reset_level(level)
                 game_over = 0
                 score = 0
+                exit_score = 5
         
         # If player has completed the level.
         if game_over == 1:
             # Reset game and go to next level.
             level += 1
-            if level == 2:
-                bg_img = pygame.image.load('img/world2/castle.png')
+            exit_score += 5
+            if level > 5 and level < 11:
+                bg_img = pygame.image.load('img/world2/forest.png')
             if level <= max_levels:
                 # Reset level.
                 world_data = []
@@ -525,11 +538,17 @@ while run == True:
                     world = reset_level(level)
                     game_over = 0
                     score = 0
+                    exit_score = 5
                     if level == 1:
                         bg_img = pygame.image.load('img/world1/sky.png')
+                if exit2_button.draw():
+                    run = False
 
     # Event Handler
     for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
         if main_menu == False:
             key = pygame.key.get_pressed()
             if event.type == pygame.QUIT:
