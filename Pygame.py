@@ -32,7 +32,7 @@ tile_size = 50
 game_over = 0
 main_menu = True
 level = 1
-max_levels = 10
+max_levels = 15
 score = 0
 exit_score = 5
 
@@ -315,9 +315,12 @@ class World():
         # Load images
         dirt_img = pygame.image.load('img/world1/dirt.png')
         grass_img = pygame.image.load('img/world1/grass.png')
-        if level > 5 and level < 11:
+        if level >= 6 and level <= 10:
             grass_img = pygame.image.load('img/world2/grass2.png')
             dirt_img = pygame.image.load('img/world2/dirt2.png')
+        elif level >= 11 and level <= 15:
+            grass_img = pygame.image.load('img/world3/brick.png')
+            dirt_img = pygame.image.load('img/world3/brickfloor.png')
         row_count = 0
         for row in data:
             col_count = 0
@@ -373,8 +376,10 @@ class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('img/world1/enemy.png')
-        if level > 5 and level < 11:
+        if level >= 6 and level <= 10:
             self.image = pygame.image.load('img/world2/enemy2.png')
+        elif level >= 11 and level <= 15:
+            self.image = pygame.image.load('img/world3/enemy3.png')
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -392,8 +397,10 @@ class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y, move_x, move_y):
         pygame.sprite.Sprite.__init__(self)
         img = pygame.image.load('img/world1/platform.png')
-        if level > 5 and level < 11:
+        if level >= 6 and level <= 10:
             img = pygame.image.load('img/world2/platform2.png')
+        elif level >= 11 and level <= 15:
+            img = pygame.image.load('img/world3/platform3.png')
         self.image = pygame.transform.scale(img, (tile_size, tile_size // 2))
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -417,8 +424,10 @@ class Spikes(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         img = pygame.image.load('img/world1/spikes.png')
-        if level > 5 and level < 11:
+        if level >= 6 and level <= 10:
             img = pygame.image.load('img/world2/thorns.png')
+        elif level >= 11 and level <= 15:
+            img = pygame.image.load('img/world3/lava.png')
         self.image = pygame.transform.scale(img, (tile_size, tile_size //2))
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -481,7 +490,7 @@ while run == True:
         screen.blit(bg_img, (0, 0))
         if level <= 5:
             screen.blit(sun_img, (100, 100))
-        elif level > 5 and level < 11:
+        elif level >= 6 and level <= 10:
             screen.blit(moon_img, (100, 100))
         if level == 1:
             draw_text('Collect all 5 rupees', font, blue, (screen_width // 3) - 140, screen_height // 3)
@@ -521,8 +530,10 @@ while run == True:
             # Reset game and go to next level.
             level += 1
             exit_score += 5
-            if level > 5 and level < 11:
+            if level >= 6 and level <= 10:
                 bg_img = pygame.image.load('img/world2/forest.png')
+            elif level >= 11 and level <= 15:
+                bg_img = pygame.image.load('img/world3/castle.png')
             if level <= max_levels:
                 # Reset level.
                 world_data = []
