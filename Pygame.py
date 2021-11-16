@@ -31,6 +31,7 @@ font_score = pygame.font.SysFont('Berlin Sans FB Demi', 30)
 tile_size = 50
 game_over = 0
 main_menu = True
+worldnum = 1
 level = 1
 max_levels = 15
 score = 0
@@ -506,6 +507,12 @@ while run == True:
                 score += 1
                 rupee_fx.play()
             draw_text(' x ' + str(score), font_score, white, tile_size - 10, 10)
+            draw_text('Level ' + str(level), font_score, white, tile_size + 180, 10)
+            draw_text('World ' + str(worldnum), font_score, white, tile_size + 60, 10)
+            if level >= 6 and level <=10:
+                worldnum = 2
+            elif level >= 11 and level <=15:
+                worldnum = 3
 
         blob_group.draw(screen)
         platform_group.draw(screen)
