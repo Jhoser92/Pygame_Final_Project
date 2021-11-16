@@ -32,7 +32,7 @@ tile_size = 50
 game_over = 0
 main_menu = True
 worldnum = 1
-level = 1
+level = 15
 max_levels = 15
 score = 0
 exit_score = 5
@@ -513,6 +513,8 @@ while run == True:
                 worldnum = 2
             elif level >= 11 and level <=15:
                 worldnum = 3
+            else:
+                worldnum = 1
 
         blob_group.draw(screen)
         platform_group.draw(screen)
