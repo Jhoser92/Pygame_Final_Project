@@ -15,6 +15,7 @@ pygame.init()
 FPS = 60
 fpsClock = pygame.time.Clock()
 
+# Screen dimensions.
 screen_width = 1000
 screen_height = 1000
 
@@ -313,7 +314,7 @@ class World():
 
         self.tile_list = []
 
-        # Load images
+        # Load images and change them depending on level.
         dirt_img = pygame.image.load('img/world1/dirt.png')
         grass_img = pygame.image.load('img/world1/grass.png')
         if level >= 6 and level <= 10:
@@ -376,6 +377,7 @@ class World():
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
+        # Set enemies depending on levels.
         self.image = pygame.image.load('img/world1/enemy.png')
         if level >= 6 and level <= 10:
             self.image = pygame.image.load('img/world2/enemy2.png')
@@ -397,6 +399,7 @@ class Enemy(pygame.sprite.Sprite):
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y, move_x, move_y):
         pygame.sprite.Sprite.__init__(self)
+        # Set platforms theme depending on levels.
         img = pygame.image.load('img/world1/platform.png')
         if level >= 6 and level <= 10:
             img = pygame.image.load('img/world2/platform2.png')
@@ -424,6 +427,7 @@ class Platform(pygame.sprite.Sprite):
 class Spikes(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
+        # Set hazards depending on levels.
         img = pygame.image.load('img/world1/spikes.png')
         if level >= 6 and level <= 10:
             img = pygame.image.load('img/world2/thorns.png')
@@ -451,7 +455,7 @@ class Exit(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-
+# Player coordinates.
 player = Player(50, screen_height - 130)
 
 blob_group = pygame.sprite.Group()
@@ -481,6 +485,7 @@ exit2_button = Button(screen_width // 2 - 40, screen_height // 1.8, exit2_img)
 run = True
 while run == True:
 
+    # Main menu page.
     if main_menu == True:
         screen.blit(menu_img, (0, 0))
         if exit_button.draw():
@@ -489,11 +494,13 @@ while run == True:
             main_menu = False
     else:
         screen.blit(bg_img, (0, 0))
+        # Change sun to moon depending on level.
         if level <= 5:
             screen.blit(sun_img, (100, 100))
         elif level >= 6 and level <= 10:
             screen.blit(moon_img, (100, 100))
         if level == 1:
+            # Dispay the requirements.
             draw_text('Collect all 5 rupees', font, blue, (screen_width // 3) - 140, screen_height // 3)
             draw_text('to exit!', font, blue, (screen_width // 2) - 140, screen_height // 2.5)
         world.draw()
@@ -506,9 +513,11 @@ while run == True:
             if pygame.sprite.spritecollide(player, rupee_group, True):
                 score += 1
                 rupee_fx.play()
+            # Overhead display text.
             draw_text(' x ' + str(score), font_score, white, tile_size - 10, 10)
             draw_text('Level ' + str(level), font_score, white, tile_size + 180, 10)
             draw_text('World ' + str(worldnum), font_score, white, tile_size + 60, 10)
+            # Set the world numbers depending on level.
             if level >= 6 and level <=10:
                 worldnum = 2
             elif level >= 11 and level <=15:
@@ -539,6 +548,7 @@ while run == True:
             # Reset game and go to next level.
             level += 1
             exit_score += 5
+            # Change backgrounds depending on levels.
             if level >= 6 and level <= 10:
                 bg_img = pygame.image.load('img/world2/forest.png')
             elif level >= 11 and level <= 15:
@@ -559,6 +569,7 @@ while run == True:
                     game_over = 0
                     score = 0
                     exit_score = 5
+                    # Change background back to sky.
                     if level == 1:
                         bg_img = pygame.image.load('img/world1/sky.png')
                 if exit2_button.draw():
