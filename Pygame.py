@@ -235,7 +235,7 @@ class Player():
                 game_over = -1
                 gameover_fx.play()
 
-            # Check for collision with exit.
+            # Check for collision with exit and check if rupees have been collected to exit.
             if score >= exit_score:
                 if pygame.sprite.spritecollide(self, exit_group, False):
                     game_over = 1
@@ -515,8 +515,8 @@ while run == True:
                 rupee_fx.play()
             # Overhead display text.
             draw_text(' x ' + str(score), font_score, white, tile_size - 10, 10)
-            draw_text('Level ' + str(level), font_score, white, tile_size + 180, 10)
-            draw_text('World ' + str(worldnum), font_score, white, tile_size + 60, 10)
+            draw_text('Level ' + str(level), font_score, white, tile_size + 190, 10)
+            draw_text('World ' + str(worldnum), font_score, white, tile_size + 70, 10)
             # Set the world numbers depending on level.
             if level >= 6 and level <=10:
                 worldnum = 2
@@ -547,8 +547,9 @@ while run == True:
         if game_over == 1:
             # Reset game and go to next level.
             level += 1
+            # Update exit requirement.
             exit_score += 5
-            # Change backgrounds depending on levels.
+            # Change backgrounds depending on level.
             if level >= 6 and level <= 10:
                 bg_img = pygame.image.load('img/world2/forest.png')
             elif level >= 11 and level <= 15:
@@ -568,6 +569,7 @@ while run == True:
                     world = reset_level(level)
                     game_over = 0
                     score = 0
+                    # Update exit requirement.
                     exit_score = 5
                     # Change background back to sky.
                     if level == 1:
