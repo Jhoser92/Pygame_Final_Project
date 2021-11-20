@@ -20,7 +20,13 @@ screen_width = 1000
 screen_height = 1000
 
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption('Platformer')
+
+# Set Title 
+pygame.display.set_caption('Loops Adventure')
+
+# Set Icon
+icon = pygame.image.load('img/head.png')
+pygame.display.set_icon(icon)
 
 # Define font.
 font = pygame.font.SysFont('Berlin Sans FB Demi', 70)
@@ -33,8 +39,8 @@ tile_size = 50
 game_over = 0
 main_menu = True
 worldnum = 1
-level = 1
-max_levels = 15
+level = 2
+max_levels = 2
 score = 0
 exit_score = 5
 
@@ -542,6 +548,8 @@ while run == True:
                 game_over = 0
                 score = 0
                 exit_score = 5
+            if exit2_button.draw():
+                    run = False
         
         # If player has completed the level.
         if game_over == 1:
