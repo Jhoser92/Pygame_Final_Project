@@ -39,8 +39,8 @@ tile_size = 50
 game_over = 0
 main_menu = True
 worldnum = 1
-level = 2
-max_levels = 2
+level = 1
+max_levels = 15
 score = 0
 exit_score = 5
 
